@@ -48,12 +48,31 @@ class MealsManager():
 
 
     def add_new_meal(self, meal_name, meal_type, ingredients, url):
-        new_meal = {'meal_name': meal_name, 'meal_type': meal_type, 'ingredients': ingredients, 'url': url}
+        new_meal = {'meal_name': meal_name, 'meal_type': meal_type, 'ingredients': ingredients, 'url': url} #  TODO: ingredients should be a list
         self.__save_new_meal(new_meal)
+
+    def __intersect_lists(self, list1, list2):
+        return list(set(list1) & set(list2))
+
+
+    def search_by_ingredients(self, specified_ingredients):
+        meals = self.__collect_meals()
+        meals_with_specified_ingredients = list()
+
+        for meal in meals:
+            intersected_ingredients = self.__intersect_lists(meal['ingredients'], specified_ingredients)
+            if len(intersected_ingredients) == len(specified_ingredients):
+                meals_with_specified_ingredients.append({'meal_name': meal['meal_name'], 'ingredients': meal['ingredients']})
+        if meals_with_specified_ingredients:
+            return meals_with_specified_ingredients
+        else:
+            return 'No meals with specified ingredients found.'
 
 
 meals_12032022 = MealsManager()
 
-print(meals_12032022.list_meals())
-print(meals_12032022.list_meals('snack'))
-meals_12032022.add_new_meal('meal_name', 'meal_type', 'ingredients', 'url')
+# print(meals_12032022.list_meals())
+# print(meals_12032022.list_meals('snack'))
+# meals_12032022.add_new_meal('meal_name', 'meal_type', 'ingredients', 'url')
+
+print(meals_12032022.search_by_ingredients(['szczypiorek']))
