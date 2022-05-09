@@ -23,7 +23,7 @@ class MealsManager():
     @staticmethod
     def __collect_meals():
         meals = list()
-        for file_name in os.listdir():
+        for file_name in os.listdir('data'):
             tmp_meal = MealsManager.__read_file(file_name, 'data')
             meals.append(tmp_meal)
         return meals
