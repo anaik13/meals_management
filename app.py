@@ -50,7 +50,7 @@ class MealsManager():
 
     @staticmethod
     def add_new_meal(meal_name, suggested_meal_type, ingredients, url):
-        new_meal = {'meal_name': meal_name, 'suggested_meal_type': suggested_meal_type, 'ingredients': ingredients, 'url': url} #  TODO: ingredients should be a list
+        new_meal = {'meal_name': meal_name, 'suggested_meal_type': suggested_meal_type, 'ingredients': ingredients, 'url': url}
         file_name = new_meal['meal_name'].lower().replace(' ', '_') + '.json'
         MealsManager.__write_json_file(new_meal, file_name, 'w', 'data')
 
@@ -64,7 +64,7 @@ class MealsManager():
         meals_with_specified_ingredients = list()
 
         for meal in meals:
-            intersected_ingredients = MealsManager.__intersect_lists(meal['ingredients'], specified_ingredients)
+            intersected_ingredients = MealsManager.__intersect_lists(list(meal['ingredients'].keys()), specified_ingredients)
             if len(intersected_ingredients) == len(specified_ingredients):
                 meals_with_specified_ingredients.append({'meal_name': meal['meal_name'], 'ingredients': meal['ingredients']})
         if meals_with_specified_ingredients:
@@ -103,7 +103,7 @@ class MealsManager():
         MealsManager.__write_json_file(added_meals, file_name, 'w', 'meal_reports')
 
 
-    def create_meals_summary(self): # TODO: not working, changed structure of meal_reports
+    def create_meals_summary(self):
         try:
             meals = MealsManager.__read_file(self.report_start_date + '_' + self.report_end_date + '.json', 'meal_reports')
             report_exists = 1
@@ -158,38 +158,42 @@ class MealsManager():
             report_exists = 0
 
         if report_exists:
-            ingredients = dict()
+            shopping_list = dict()
             for meal in meals:
                 for ingredient in meal['ingredients']:
-                    ingredients[ingredient] =+ meal['portion'] #  TODO: Currently there is an assumption that for every meal we need 1 portion of each ingredient
+                    if ingredient in shopping_list:
+                        shopping_list[ingredient]['quantity'] += meal['portion'] * meal['ingredients'][ingredient]['quantity']
+                    else:
+                        shopping_list[ingredient] = dict()
+                        shopping_list[ingredient]['quantity'] = meal['portion'] * meal['ingredients'][ingredient]['quantity']
+                        shopping_list[ingredient]['unit'] = meal['ingredients'][ingredient]['unit']
+
             # Save shopping list to file
             file_name = self.report_start_date + '_' + self.report_end_date + '.json'
-            MealsManager.__write_json_file(ingredients, file_name, 'w', 'shopping_lists')
+            MealsManager.__write_json_file(shopping_list, file_name, 'w', 'shopping_lists')
+
         else:
             print(f'There is no added meals for date {self.report_start_date} - {self.report_end_date}.')
 
 
 meals_12032022 = MealsManager('20220321', '20210327')
 
-# print(meals_12032022.list_meals())
-# print(meals_12032022.list_meals('snack'))
-# meals_12032022.add_new_meal('meal_name', 'suggested_meal_type', ['ingredients', 'szczypiorek'], 'url')
-# print(meals_12032022.search_by_ingredients(['szczypiorek']))
+print(meals_12032022.list_meals())
+print(meals_12032022.list_meals('snack'))
+meals_12032022.add_new_meal('meal_name', 'suggested_meal_type', {'wanilia': {'quantity': 2, 'unit': 'peace'}}, 'url')
+print(meals_12032022.search_by_ingredients(['szczypiorek']))
 
 # meals_12032022.add_meal_to_report('Koktajl truskawkowy', '2022-03-26', 'snack', 1)
 # meals_12032022.add_meal_to_report('Bułka zapiekana z jajkiem', '2022-03-26', 'breakfast', 1)
 # meals_12032022.add_meal_to_report('Koktajl truskawkowy', '2022-03-27', 'snack', 1)
-
-meals_12032022.create_meals_summary()
-
+#
+# meals_12032022.create_meals_summary()
+#
 # meals_12032022.create_shopping_list()
 
 
 
 # # TODO:
-# - zestawienie tygodniowe (jakie dania oraz ile danych produktow do kupienia)
-# - dodanie potraw na dany tydzien
-# - wylistowanie potraw z zestawienia
 # - dodanie/usuniecie dania z zestawienia
 # + wygenerowanie pdf z lista zakupow
 #

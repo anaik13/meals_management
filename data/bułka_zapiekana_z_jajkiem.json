@@ -1,1 +1,1 @@
-{"meal_name": "bułka zapiekana z jajkiem", "suggested_meal_type": "breakfast", "ingredients": ["bułka", "jajko", "ser", "szczypiorek"], "url": "https://kolorowegarnki.pl/przepis/bulki-zapiekane-z-jajkiem/"}
+{"meal_name": "bułka zapiekana z jajkiem", "suggested_meal_type": "breakfast", "ingredients": {"bułka": {"quantity": 4, "unit": "piece"}, "jajko": {"quantity": 4, "unit": "piece"}, "ser": {"quantity": 0.5, "unit": "kg"}, "szczypiorek": {"quantity": 1, "unit": "piece"}}, "url": "https://kolorowegarnki.pl/przepis/bulki-zapiekane-z-jajkiem/"}
