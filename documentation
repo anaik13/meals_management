@@ -3,4 +3,5 @@ App functonalities:
 - search_by_ingredients() - list meals which includes specified ingredient
 - add_new_meal() - add new meal to list of meals
 - add_meal_to_report() - add meal to meal plan for specified date
+- create_shopping_list() - TODO
 - create_meals_summary() -  TODO
