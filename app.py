@@ -2,11 +2,11 @@ import pandas as pd
 import os
 import json
 
-os.chdir(r'C:\Users\anaik\Desktop\data_science_nauka\python\python_projects\meals_management')
+os.chdir(r'C:\Users\anaik\Desktop\praca_nauka\python\python_projects\meals_management')
 
 class MealsManager():
 
-    MEAL_TYPES_IN_ORDER = ['breakfast', 'lunch', 'supper', 'snack', 'for parties'] # TODO: Add check for adding new meals
+    MEAL_TYPES_IN_ORDER = ['breakfast', 'lunch', 'supper', 'snack', 'for parties']
 
     def __init__(self, report_start_date, report_end_date):
         self.report_start_date = report_start_date
@@ -83,13 +83,16 @@ class MealsManager():
     def add_meal_to_report(self, meal_name, meal_date, meal_type, portion):
         meal = MealsManager.__return_meal_by_name(meal_name)
 
+        if meal_type not in self.MEAL_TYPES_IN_ORDER:
+            print(f'You specified unknown meal type. Available meal types: {self.MEAL_TYPES_IN_ORDER}')
+
         try:
-            added_meals = MealsManager.__read_file(self.report_start_date + '_' + self.report_end_date + '.json', 'meal_reports')
+            file_name = self.report_start_date + '_' + self.report_end_date + '.json'
+            added_meals = MealsManager.__read_file(file_name, 'meal_reports')
             report_exists = 1
         except FileNotFoundError:
             report_exists = 0
 
-        file_name = self.report_start_date + '_' + self.report_end_date + '.json'
 
         meal['meal_date'] = meal_date
         meal['meal_type'] = meal_type
@@ -103,99 +106,109 @@ class MealsManager():
         MealsManager.__write_json_file(added_meals, file_name, 'w', 'meal_reports')
 
 
+    def delete_meal_from_report(self, meal_date, meal_name, meal_type):
+        try:
+            file_name = self.report_start_date + '_' + self.report_end_date + '.json'
+            meals = MealsManager.__read_file(file_name, 'meal_reports')
+        except FileNotFoundError:
+            print(f'There is no added meals for date {self.report_start_date} - {self.report_end_date}.')
+            return
+
+        meal_deleted = 0
+        for idx, meal in enumerate(meals.copy()):
+            if meal['meal_date'] == meal_date and meal['meal_name'] == meal_name:
+                meals.pop(idx)
+                meal_deleted = 1
+
+        if not meal_deleted:
+            print('There is NO meals in report which you specified.')
+        else:
+            MealsManager.__write_json_file(meals, file_name, 'w', 'meal_reports')
+
+
     def create_meals_summary(self):
         try:
             meals = MealsManager.__read_file(self.report_start_date + '_' + self.report_end_date + '.json', 'meal_reports')
-            report_exists = 1
         except FileNotFoundError:
-            report_exists = 0
-
-        if report_exists:
-
-            # Sort meals by date and meal_type
-            print('Meals sorted by day and meal type:')
-            meal_type_order = {key: i for i, key in enumerate(self.MEAL_TYPES_IN_ORDER)}
-
-            meals = sorted(meals, key=lambda x: meal_type_order[x['meal_type']])
-            meals = sorted(meals, key=lambda x: x['meal_date'])
-
-            analysed_date = meals[0]['meal_date']
-            print(analysed_date)
-            for meal in meals:
-                if analysed_date == meal['meal_date']:
-                    print(meal)
-                else:
-                    analysed_date = meal['meal_date']
-                    print(analysed_date)
-                    print(meal)
-
-
-
-            # Aggregate meals by name - calculate quantity of meals
-            print('Meals aggregated by meal name:')
-
-            meals_quantity = dict()
-
-            for meal in meals:
-                meal_name = meal['meal_name']
-                meal_portion = meal['portion']
-                if meal_name in meals_quantity:
-                    meals_quantity[meal_name] += meal_portion
-                else:
-                    meals_quantity[meal_name] = meal_portion
-
-            print(meals_quantity)
-
-        else:
             print(f'There is no added meals for date {self.report_start_date} - {self.report_end_date}.')
+            return
+
+        # Sort meals by date and meal_type
+        print('Meals sorted by day and meal type:')
+        meal_type_order = {key: i for i, key in enumerate(self.MEAL_TYPES_IN_ORDER)}
+
+        meals = sorted(meals, key=lambda x: meal_type_order[x['meal_type']])
+        meals = sorted(meals, key=lambda x: x['meal_date'])
+
+        analysed_date = meals[0]['meal_date']
+        print(analysed_date)
+        for meal in meals:
+            if analysed_date == meal['meal_date']:
+                print(meal)
+            else:
+                analysed_date = meal['meal_date']
+                print(analysed_date)
+                print(meal)
+
+
+        # Aggregate meals by name - calculate quantity of meals
+        print('Meals aggregated by meal name:')
+
+        meals_quantity = dict()
+
+        for meal in meals:
+            meal_name = meal['meal_name']
+            meal_portion = meal['portion']
+            if meal_name in meals_quantity:
+                meals_quantity[meal_name] += meal_portion
+            else:
+                meals_quantity[meal_name] = meal_portion
+
+        print(meals_quantity)
 
 
     def create_shopping_list(self):
         try:
-            meals = MealsManager.__read_file(self.report_start_date + '_' + self.report_end_date + '.json', 'meal_reports')
-            report_exists = 1
-        except FileNotFoundError:
-            report_exists = 0
-
-        if report_exists:
-            shopping_list = dict()
-            for meal in meals:
-                for ingredient in meal['ingredients']:
-                    if ingredient in shopping_list:
-                        shopping_list[ingredient]['quantity'] += meal['portion'] * meal['ingredients'][ingredient]['quantity']
-                    else:
-                        shopping_list[ingredient] = dict()
-                        shopping_list[ingredient]['quantity'] = meal['portion'] * meal['ingredients'][ingredient]['quantity']
-                        shopping_list[ingredient]['unit'] = meal['ingredients'][ingredient]['unit']
-
-            # Save shopping list to file
             file_name = self.report_start_date + '_' + self.report_end_date + '.json'
-            MealsManager.__write_json_file(shopping_list, file_name, 'w', 'shopping_lists')
-
-        else:
+            meals = MealsManager.__read_file(file_name, 'meal_reports')
+        except FileNotFoundError:
             print(f'There is no added meals for date {self.report_start_date} - {self.report_end_date}.')
+            return
+
+        shopping_list = dict()
+        for meal in meals:
+            for ingredient in meal['ingredients']:
+                if ingredient in shopping_list:
+                    shopping_list[ingredient]['quantity'] += meal['portion'] * meal['ingredients'][ingredient]['quantity']
+                else:
+                    shopping_list[ingredient] = dict()
+                    shopping_list[ingredient]['quantity'] = meal['portion'] * meal['ingredients'][ingredient]['quantity']
+                    shopping_list[ingredient]['unit'] = meal['ingredients'][ingredient]['unit']
+
+        # Save shopping list to file
+        MealsManager.__write_json_file(shopping_list, file_name, 'w', 'shopping_lists')
 
 
 meals_12032022 = MealsManager('20220321', '20210327')
 
-print(meals_12032022.list_meals())
-print(meals_12032022.list_meals('snack'))
-meals_12032022.add_new_meal('meal_name', 'suggested_meal_type', {'wanilia': {'quantity': 2, 'unit': 'peace'}}, 'url')
-print(meals_12032022.search_by_ingredients(['szczypiorek']))
+# print(meals_12032022.list_meals())
+# print(meals_12032022.list_meals('snack'))
+# meals_12032022.add_new_meal('meal_name', 'suggested_meal_type', {'wanilia': {'quantity': 2, 'unit': 'peace'}}, 'url')
+# print(meals_12032022.search_by_ingredients(['szczypiorek']))
 
 # meals_12032022.add_meal_to_report('Koktajl truskawkowy', '2022-03-26', 'snack', 1)
 # meals_12032022.add_meal_to_report('Bułka zapiekana z jajkiem', '2022-03-26', 'breakfast', 1)
 # meals_12032022.add_meal_to_report('Koktajl truskawkowy', '2022-03-27', 'snack', 1)
-#
+
 # meals_12032022.create_meals_summary()
-#
 # meals_12032022.create_shopping_list()
+#
+# meals_12032022.delete_meal_from_report('2022-03-27', 'koktajl_truskawkowy', 'snack')
 
 
 
 # # TODO:
-# - dodanie/usuniecie dania z zestawienia
-# + wygenerowanie pdf z lista zakupow
+# - wygenerowanie podsumowania i listy zakupow jako pdf/word
 #
 # - dodanie kategorii skladnikow (np. nabial, pieczywo, itp.)
 # - sortowanie listy zakupow zgodnie z konkretna kolejnoscia
