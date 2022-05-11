@@ -43,6 +43,11 @@ class MealsManager():
 
     @staticmethod
     def list_meals(meal_type=None):
+        """
+        List all meals with specified meal type or all meals added to data folder.
+        :param meal_type str
+        :return: list
+        """
         meals = MealsManager.__collect_meals()
         meal_names = list()
         if meal_type:
@@ -57,6 +62,13 @@ class MealsManager():
 
     @staticmethod
     def add_new_meal(meal_name, suggested_meal_type, ingredients, url):
+        """
+        Add new meal to data folder.
+        :param meal_name str
+        :param suggested_meal_type str
+        :param ingredients list(str)
+        :param url str
+        """
         new_meal = {
             'meal_name': meal_name,
             'suggested_meal_type': suggested_meal_type,
@@ -68,6 +80,11 @@ class MealsManager():
 
     @staticmethod
     def search_by_ingredients(specified_ingredients):
+        """
+        List meals which contain specified ingredients.
+        :param specified_ingredients list
+        :return: list(dict)
+        """
         meals = MealsManager.__collect_meals()
         meals_with_specified_ingredients = list()
 
@@ -81,6 +98,7 @@ class MealsManager():
             return 'No meals with specified ingredients found.'
 
     def add_meal_to_report(self, meal_name, meal_date, meal_type, portion):
+        """Add meal to report for specified date, with meal type and meal portion."""
         meal = MealsManager.__return_meal_by_name(meal_name)
 
         if meal_type not in self.MEAL_TYPES_IN_ORDER:
@@ -108,6 +126,12 @@ class MealsManager():
 
 
     def delete_meal_from_report(self, meal_date, meal_name, meal_type):
+        """
+        Delete specified meal from report. Define meal date, name and type to find a particular meal in report.
+        :param meal_date str
+        :param meal_name str
+        :param meal_type str
+        """
         try:
             file_name = self.report_start_date + '_' + self.report_end_date + '.json'
             meals = MealsManager.__read_file(file_name, 'meal_reports')
@@ -117,7 +141,7 @@ class MealsManager():
 
         meal_deleted = 0
         for meal_idx, meal in enumerate(meals.copy()):
-            if meal['meal_date'] == meal_date and meal['meal_name'] == meal_name:
+            if meal['meal_date'] == meal_date and meal['meal_name'] == meal_name and meal['meal_type'] == meal_type:
                 meals.pop(meal_idx)
                 meal_deleted = 1
 
@@ -127,6 +151,9 @@ class MealsManager():
             print('There is NO meals in report which you specified.')
 
     def create_report_summary(self):
+        """
+        Create summary of report - sorted by date and meal type list of meals as well as a quantitative summary of meals.
+        """
         try:
             file_name = self.report_start_date + '_' + self.report_end_date + '.json'
             meals = MealsManager.__read_file(file_name, 'meal_reports')
@@ -167,6 +194,9 @@ class MealsManager():
         print(meals_quantity)
 
     def create_shopping_list(self):
+        """
+        Create a shopping list based on meals report.
+        """
         try:
             file_name = self.report_start_date + '_' + self.report_end_date + '.json'
             meals = MealsManager.__read_file(file_name, 'meal_reports')
@@ -188,29 +218,54 @@ class MealsManager():
         MealsManager.__write_json_file(shopping_list, file_name, 'w', 'shopping_lists')
 
 
-meals_12032022 = MealsManager('20220321', '20210327')
-
-# print(meals_12032022.list_meals())
-# print(meals_12032022.list_meals('snack'))
-# meals_12032022.add_new_meal('meal_name', 'suggested_meal_type', {'wanilia': {'quantity': 2, 'unit': 'peace'}}, 'url')
-# print(meals_12032022.search_by_ingredients(['szczypiorek']))
-
-# meals_12032022.add_meal_to_report('Koktajl truskawkowy', '2022-03-26', 'snack', 1)
-# meals_12032022.add_meal_to_report('Bułka zapiekana z jajkiem', '2022-03-26', 'breakfast', 1)
-# meals_12032022.add_meal_to_report('Koktajl truskawkowy', '2022-03-27', 'snack', 1)
-
-# meals_12032022.create_report_summary()
-# meals_12032022.create_shopping_list()
-#
-# meals_12032022.delete_meal_from_report('2022-03-27', 'koktajl_truskawkowy', 'snack')
-
-
-
-# # TODO:
-# - wygenerowanie podsumowania i listy zakupow jako pdf/word
-# - dodanie kategorii skladnikow (np. nabial, pieczywo, itp.)
-# - sortowanie listy zakupow zgodnie z konkretna kolejnoscia
 
 
 
 
+# Example
+
+
+meals_20220321 = MealsManager('20220321', '20220327')
+
+print(meals_12032022.list_meals())
+
+print(meals_12032022.list_meals(meal_type='snack'))
+
+meals_12032022.add_new_meal(
+    meal_name='meal_name',
+    suggested_meal_type='suggested_meal_type',
+    ingredients={'wanilia': {'quantity': 2, 'unit': 'peace'}},
+    url='url'
+)
+print(meals_12032022.search_by_ingredients(
+    specified_ingredients=['szczypiorek'])
+)
+
+meals_12032022.add_meal_to_report(
+    meal_name='Koktajl truskawkowy',
+    meal_date='2022-03-26',
+    meal_type='snack',
+    portion=1
+)
+meals_12032022.add_meal_to_report(
+    meal_name='Bułka zapiekana z jajkiem',
+    meal_date='2022-03-26',
+    meal_type='breakfast',
+    portion=1
+)
+meals_12032022.add_meal_to_report(
+    meal_name='Koktajl truskawkowy',
+    meal_date='2022-03-27',
+    meal_type='snack',
+    portion=1
+)
+
+meals_12032022.delete_meal_from_report(
+    meal_date='2022-03-27',
+    meal_name='koktajl_truskawkowy',
+    meal_type='snack'
+)
+
+meals_12032022.create_report_summary()
+
+meals_12032022.create_shopping_list()
