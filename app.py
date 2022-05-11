@@ -1,8 +1,8 @@
-import pandas as pd
-import os
 import json
+import os
 
 os.chdir(r'C:\Users\anaik\Desktop\praca_nauka\python\python_projects\meals_management')
+
 
 class MealsManager():
 
@@ -18,17 +18,31 @@ class MealsManager():
             data = json.load(file)
         return data
 
-
     @staticmethod
     def __collect_meals():
         meals = list()
         for file_name in os.listdir('data'):
-            tmp_meal = MealsManager.__read_file(file_name, 'data')
-            meals.append(tmp_meal)
+            meal = MealsManager.__read_file(file_name, 'data')
+            meals.append(meal)
         return meals
 
     @staticmethod
-    def list_meals(meal_type=None): # !
+    def __write_json_file(data, file_name, file_mode, folder_name):
+        with open(folder_name + '/' + file_name, file_mode) as file:
+            json.dump(data, file)
+
+    @staticmethod
+    def __intersect_lists(list1, list2):
+        return list(set(list1) & set(list2))
+
+    @staticmethod
+    def __return_meal_by_name(meal_name):
+        meal_name_formatted = meal_name.lower().replace(' ', '_')
+        meal = MealsManager.__read_file(meal_name_formatted + '.json', 'data')
+        return meal
+
+    @staticmethod
+    def list_meals(meal_type=None):
         meals = MealsManager.__collect_meals()
         meal_names = list()
         if meal_type:
@@ -41,22 +55,16 @@ class MealsManager():
                 meal_names.append(meal['meal_name'])
             return meal_names
 
-
-    @staticmethod
-    def __write_json_file(data, file_name, file_mode, folder_name):
-        with open(folder_name + '/' + file_name, file_mode) as file:
-            json.dump(data, file)
-
-
     @staticmethod
     def add_new_meal(meal_name, suggested_meal_type, ingredients, url):
-        new_meal = {'meal_name': meal_name, 'suggested_meal_type': suggested_meal_type, 'ingredients': ingredients, 'url': url}
+        new_meal = {
+            'meal_name': meal_name,
+            'suggested_meal_type': suggested_meal_type,
+            'ingredients': ingredients,
+            'url': url
+        }
         file_name = new_meal['meal_name'].lower().replace(' ', '_') + '.json'
         MealsManager.__write_json_file(new_meal, file_name, 'w', 'data')
-
-    @staticmethod
-    def __intersect_lists(list1, list2):
-        return list(set(list1) & set(list2))
 
     @staticmethod
     def search_by_ingredients(specified_ingredients):
@@ -71,14 +79,6 @@ class MealsManager():
             return meals_with_specified_ingredients
         else:
             return 'No meals with specified ingredients found.'
-
-
-    @staticmethod
-    def __return_meal_by_name(meal_name):
-        meal_name_formatted = meal_name.lower().replace(' ', '_')
-        meal = MealsManager.__read_file(meal_name_formatted + '.json', 'data')
-        return meal
-
 
     def add_meal_to_report(self, meal_name, meal_date, meal_type, portion):
         meal = MealsManager.__return_meal_by_name(meal_name)
@@ -98,6 +98,7 @@ class MealsManager():
         meal['meal_type'] = meal_type
         meal['portion'] = portion
         del meal['suggested_meal_type']
+
         if report_exists:
             added_meals.append(meal)
         else:
@@ -115,31 +116,31 @@ class MealsManager():
             return
 
         meal_deleted = 0
-        for idx, meal in enumerate(meals.copy()):
+        for meal_idx, meal in enumerate(meals.copy()):
             if meal['meal_date'] == meal_date and meal['meal_name'] == meal_name:
-                meals.pop(idx)
+                meals.pop(meal_idx)
                 meal_deleted = 1
 
-        if not meal_deleted:
-            print('There is NO meals in report which you specified.')
-        else:
+        if meal_deleted:
             MealsManager.__write_json_file(meals, file_name, 'w', 'meal_reports')
+        else:
+            print('There is NO meals in report which you specified.')
 
-
-    def create_meals_summary(self):
+    def create_report_summary(self):
         try:
-            meals = MealsManager.__read_file(self.report_start_date + '_' + self.report_end_date + '.json', 'meal_reports')
+            file_name = self.report_start_date + '_' + self.report_end_date + '.json'
+            meals = MealsManager.__read_file(file_name, 'meal_reports')
         except FileNotFoundError:
             print(f'There is no added meals for date {self.report_start_date} - {self.report_end_date}.')
             return
 
         # Sort meals by date and meal_type
-        print('Meals sorted by day and meal type:')
         meal_type_order = {key: i for i, key in enumerate(self.MEAL_TYPES_IN_ORDER)}
-
         meals = sorted(meals, key=lambda x: meal_type_order[x['meal_type']])
         meals = sorted(meals, key=lambda x: x['meal_date'])
 
+        # Print meals after sorting
+        print('Meals sorted by day and meal type:')
         analysed_date = meals[0]['meal_date']
         print(analysed_date)
         for meal in meals:
@@ -152,10 +153,7 @@ class MealsManager():
 
 
         # Aggregate meals by name - calculate quantity of meals
-        print('Meals aggregated by meal name:')
-
         meals_quantity = dict()
-
         for meal in meals:
             meal_name = meal['meal_name']
             meal_portion = meal['portion']
@@ -164,8 +162,9 @@ class MealsManager():
             else:
                 meals_quantity[meal_name] = meal_portion
 
+        # Print meals after aggregating
+        print('Meals aggregated by meal name:')
         print(meals_quantity)
-
 
     def create_shopping_list(self):
         try:
@@ -200,7 +199,7 @@ meals_12032022 = MealsManager('20220321', '20210327')
 # meals_12032022.add_meal_to_report('Bułka zapiekana z jajkiem', '2022-03-26', 'breakfast', 1)
 # meals_12032022.add_meal_to_report('Koktajl truskawkowy', '2022-03-27', 'snack', 1)
 
-# meals_12032022.create_meals_summary()
+# meals_12032022.create_report_summary()
 # meals_12032022.create_shopping_list()
 #
 # meals_12032022.delete_meal_from_report('2022-03-27', 'koktajl_truskawkowy', 'snack')
@@ -209,7 +208,6 @@ meals_12032022 = MealsManager('20220321', '20210327')
 
 # # TODO:
 # - wygenerowanie podsumowania i listy zakupow jako pdf/word
-#
 # - dodanie kategorii skladnikow (np. nabial, pieczywo, itp.)
 # - sortowanie listy zakupow zgodnie z konkretna kolejnoscia
 
