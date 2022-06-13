@@ -227,45 +227,45 @@ class MealsManager():
 
 meals_20220321 = MealsManager('20220321', '20220327')
 
-print(meals_12032022.list_meals())
+print(meals_20220321.list_meals())
 
-print(meals_12032022.list_meals(meal_type='snack'))
+print(meals_20220321.list_meals(meal_type='snack'))
 
-meals_12032022.add_new_meal(
+meals_20220321.add_new_meal(
     meal_name='meal_name',
     suggested_meal_type='suggested_meal_type',
     ingredients={'wanilia': {'quantity': 2, 'unit': 'peace'}},
     url='url'
 )
-print(meals_12032022.search_by_ingredients(
+print(meals_20220321.search_by_ingredients(
     specified_ingredients=['szczypiorek'])
 )
 
-meals_12032022.add_meal_to_report(
+meals_20220321.add_meal_to_report(
     meal_name='Koktajl truskawkowy',
     meal_date='2022-03-26',
     meal_type='snack',
     portion=1
 )
-meals_12032022.add_meal_to_report(
+meals_20220321.add_meal_to_report(
     meal_name='Bułka zapiekana z jajkiem',
     meal_date='2022-03-26',
     meal_type='breakfast',
     portion=1
 )
-meals_12032022.add_meal_to_report(
+meals_20220321.add_meal_to_report(
     meal_name='Koktajl truskawkowy',
     meal_date='2022-03-27',
     meal_type='snack',
     portion=1
 )
 
-meals_12032022.delete_meal_from_report(
+meals_20220321.delete_meal_from_report(
     meal_date='2022-03-27',
     meal_name='koktajl_truskawkowy',
     meal_type='snack'
 )
 
-meals_12032022.create_report_summary()
+meals_20220321.create_report_summary()
 
-meals_12032022.create_shopping_list()
+meals_20220321.create_shopping_list()
